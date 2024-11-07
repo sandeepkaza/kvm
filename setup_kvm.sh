@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the desired hostname (change "YourDesiredHostname" to your actual hostname)
-NEW_HOSTNAME="kvm2.multicloud365.com"
+NEW_HOSTNAME="kvm2"
 
 # Change the hostname
 sudo hostnamectl set-hostname "$NEW_HOSTNAME"
