@@ -59,12 +59,23 @@ echo "Cloudflare's cloudflared installed and verified."
 
 # Install Tailscale
 echo "Installing Tailscale for PiKVM..."
+
+# Check if a pacman lock file exists, remove it if present
+if [ -f /var/lib/pacman/db.lck ]; then
+    echo "Removing pacman lock file..."
+    sudo rm /var/lib/pacman/db.lck
+fi
+
+# Update package database and upgrade existing packages
+sudo pacman -Syu --noconfirm
+
+# Install Tailscale for PiKVM
 sudo pacman -S tailscale-pikvm --noconfirm
 
 # Enable and start Tailscale service
 sudo systemctl enable --now tailscaled
 
-# Authenticate and bring up Tailscale (you'll need to authenticate in the browser)
+# Authenticate and bring up Tailscale network
 echo "Bringing up Tailscale network..."
 sudo tailscale up
 
