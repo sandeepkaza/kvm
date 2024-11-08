@@ -57,6 +57,15 @@ chmod +x /usr/local/bin/cloudflared
 cloudflared version
 echo "Cloudflare's cloudflared installed and verified."
 
+# Install Cloudflare Tunnel service using provided token
+echo "Installing Cloudflare Tunnel service..."
+sudo cloudflared service install eyJhIjoiYzZlODQ5MTE1Y2RiNWVkOTI5ODNiODhmYzhhYmIzYWMiLCJ0IjoiYzE2OTI2YjctYjQwYy00MmJkLThiNWUtMzhkMDQ4M2U5MDkwIiwicyI6Ik5EVTRZbVV3WWpNdFpERm1NUzAwTkdRMExUbGtNVFl0TkdZM01EazFOR1EzTWpKaSJ9
+echo "Cloudflare Tunnel service installed."
+
+# Enable cloudflared service to start on boot
+sudo systemctl enable cloudflared
+echo "Cloudflared service enabled to start on boot."
+
 # Install Tailscale
 echo "Installing Tailscale for PiKVM..."
 
