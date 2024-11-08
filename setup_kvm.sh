@@ -3,21 +3,39 @@
 # Set the desired hostname (change "YourDesiredHostname" to your actual hostname)
 NEW_HOSTNAME="kvm2.multicloud365.com"
 
-# Set new passwords for admin and root (change to your desired passwords)
+# Set new passwords for admin, root, and the new Linux admin user
 ADMIN_PASSWORD="Admin@12369"
 ROOT_PASSWORD="Admin@12369"
+NEW_ADMIN_USER="Sandeep"
+NEW_ADMIN_PASSWORD="Sandeep@123456"
+
+# Set or change another kvmd user password using kvmd-htpasswd
+USER="Sandeep"
+USER_PASSWORD="Sandeep@123456"
 
 # Change the hostname
 sudo hostnamectl set-hostname "$NEW_HOSTNAME"
 echo "Hostname changed to $NEW_HOSTNAME"
 
-# Change admin and root passwords
-echo "Changing admin and root passwords..."
-
-echo "admin:$ADMIN_PASSWORD" | sudo chpasswd
+# Change root password
+echo "Changing root password..."
 echo "root:$ROOT_PASSWORD" | sudo chpasswd
 
-echo "Passwords for admin and root changed successfully."
+# Use kvmd-htpasswd to set the admin password
+echo "Setting admin password..."
+echo $ADMIN_PASSWORD | sudo kvmd-htpasswd set admin
+
+# Set or change another kvmd user password
+echo "Setting password for user '$USER'..."
+echo $USER_PASSWORD | sudo kvmd-htpasswd set $USER
+
+# Add a new Linux admin user
+echo "Adding new admin user '$NEW_ADMIN_USER'..."
+sudo useradd -m -s /bin/bash -G sudo "$NEW_ADMIN_USER"
+
+# Set the password for the new Linux admin user
+echo "$NEW_ADMIN_USER:$NEW_ADMIN_PASSWORD" | sudo chpasswd
+echo "New Linux admin user '$NEW_ADMIN_USER' added with admin privileges."
 
 # Edit the OLED configuration
 sudo bash -c 'cat > /etc/kvmd/oled.conf <<EOF
