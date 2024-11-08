@@ -3,9 +3,21 @@
 # Set the desired hostname (change "YourDesiredHostname" to your actual hostname)
 NEW_HOSTNAME="kvm2.multicloud365.com"
 
+# Set new passwords for admin and root (change to your desired passwords)
+ADMIN_PASSWORD="Admin@12369"
+ROOT_PASSWORD="Admin@12369"
+
 # Change the hostname
 sudo hostnamectl set-hostname "$NEW_HOSTNAME"
 echo "Hostname changed to $NEW_HOSTNAME"
+
+# Change admin and root passwords
+echo "Changing admin and root passwords..."
+
+echo "admin:$ADMIN_PASSWORD" | sudo chpasswd
+echo "root:$ROOT_PASSWORD" | sudo chpasswd
+
+echo "Passwords for admin and root changed successfully."
 
 # Edit the OLED configuration
 sudo bash -c 'cat > /etc/kvmd/oled.conf <<EOF
