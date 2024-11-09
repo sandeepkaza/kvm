@@ -25,9 +25,13 @@ echo "root:$ROOT_PASSWORD" | sudo chpasswd
 echo "Setting admin password..."
 echo $ADMIN_PASSWORD | sudo kvmd-htpasswd set admin
 
-# Set or change another kvmd user password
-echo "Setting password for user '$USER'..."
-echo $USER_PASSWORD | sudo kvmd-htpasswd set $USER
+# Ensure user exists before setting password
+if ! sudo kvmd-htpasswd -l | grep -q "^$NEW_ADMIN_USER$"; then
+    echo "Creating new kvmd user '$NEW_ADMIN_USER'..."
+    sudo kvmd-htpasswd add "$NEW_ADMIN_USER"
+fi
+echo "Setting password for user '$NEW_ADMIN_USER'..."
+echo $NEW_ADMIN_PASSWORD | sudo kvmd-htpasswd set $NEW_ADMIN_USER
 
 # Add a new Linux admin user
 echo "Adding new admin user '$NEW_ADMIN_USER'..."
@@ -36,6 +40,28 @@ sudo useradd -m -s /bin/bash -G sudo "$NEW_ADMIN_USER"
 # Set the password for the new Linux admin user
 echo "$NEW_ADMIN_USER:$NEW_ADMIN_PASSWORD" | sudo chpasswd
 echo "New Linux admin user '$NEW_ADMIN_USER' added with admin privileges."
+
+# Install WiFi tools
+echo "Installing WiFi tools..."
+sudo pacman -S --noconfirm wpa_supplicant wireless_tools dhclient
+
+# Enable WiFi interface (assuming wlan0 as the interface)
+echo "Enabling WiFi interface..."
+sudo ip link set wlan0 up
+
+# Connect to WiFi network
+echo "Connecting to WiFi network '$WIFI_SSID'..."
+sudo wpa_passphrase "$WIFI_SSID" "$WIFI_PASSWORD" | sudo tee /etc/wpa_supplicant/wpa_supplicant.conf
+
+# Start wpa_supplicant
+sudo systemctl start wpa_supplicant@wlan0.service
+
+# Obtain IP address via DHCP
+sudo dhclient wlan0
+
+# Check network connection
+echo "Checking network connection..."
+ping -c 4 google.com
 
 # Edit the OLED configuration
 sudo bash -c 'cat > /etc/kvmd/oled.conf <<EOF
