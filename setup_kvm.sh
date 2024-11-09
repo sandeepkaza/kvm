@@ -1,10 +1,13 @@
 #!/bin/bash
 
-# Set Wi-Fi credentials
-WIFI_SSID="YourWiFiSSID"
-WIFI_PASSWORD="YourWiFiPassword"
+# Define Cloudflare Tunnel token as a variable (update this value when needed)
+CLOUDFLARE_TOKEN="eyJhIjoiYzZlODQ5MTE1Y2RiNWVkOTI5ODNiODhmYzhhYmIzYWMiLCJ0IjoiYzE2OTI2YjctYjQwYy00MmJkLThiNWUtMzhkMDQ4M2U5MDkwIiwicyI6Ik5EVTRZbVV3WWpNdFpERm1NUzAwTkdRMExUbGtNVFl0TkdZM01EazFOR1EzTWpKaSJ9"
 
-# Set the desired hostname (change "YourDesiredHostname" to your actual hostname)
+# Set Wi-Fi credentials
+WIFI_SSID="a3gnet24G"
+WIFI_PASSWORD="Mynetwork@312"
+
+# Set the desired hostname
 NEW_HOSTNAME="kvm2.multicloud365.com"
 
 # Set new passwords for admin, root, and the new Linux admin user
@@ -12,10 +15,6 @@ ADMIN_PASSWORD="Admin@12369"
 ROOT_PASSWORD="Admin@12369"
 NEW_ADMIN_USER="Sandeep"
 NEW_ADMIN_PASSWORD="Sandeep@123456"
-
-# Set or change another kvmd user password using kvmd-htpasswd
-USER="Sandeep"
-USER_PASSWORD="Sandeep@123456"
 
 # Change the hostname
 sudo hostnamectl set-hostname "$NEW_HOSTNAME"
@@ -25,11 +24,11 @@ echo "Hostname changed to $NEW_HOSTNAME"
 echo "Changing root password..."
 echo "root:$ROOT_PASSWORD" | sudo chpasswd
 
-# Use kvmd-htpasswd to set the admin password
+# Set kvmd admin password
 echo "Setting admin password..."
 echo $ADMIN_PASSWORD | sudo kvmd-htpasswd set admin
 
-# Ensure user exists before setting password
+# Ensure kvmd user exists and set password
 if ! sudo kvmd-htpasswd -l | grep -q "^$NEW_ADMIN_USER$"; then
     echo "Creating new kvmd user '$NEW_ADMIN_USER'..."
     sudo kvmd-htpasswd add "$NEW_ADMIN_USER"
@@ -37,11 +36,9 @@ fi
 echo "Setting password for user '$NEW_ADMIN_USER'..."
 echo $NEW_ADMIN_PASSWORD | sudo kvmd-htpasswd set $NEW_ADMIN_USER
 
-# Add a new Linux admin user
-echo "Adding new admin user '$NEW_ADMIN_USER'..."
+# Add new Linux admin user
+echo "Adding new Linux admin user '$NEW_ADMIN_USER'..."
 sudo useradd -m -s /bin/bash -G sudo "$NEW_ADMIN_USER"
-
-# Set the password for the new Linux admin user
 echo "$NEW_ADMIN_USER:$NEW_ADMIN_PASSWORD" | sudo chpasswd
 echo "New Linux admin user '$NEW_ADMIN_USER' added with admin privileges."
 
@@ -57,10 +54,8 @@ sudo ip link set wlan0 up
 echo "Connecting to WiFi network '$WIFI_SSID'..."
 sudo wpa_passphrase "$WIFI_SSID" "$WIFI_PASSWORD" | sudo tee /etc/wpa_supplicant/wpa_supplicant.conf
 
-# Start wpa_supplicant
+# Start wpa_supplicant and obtain IP address via DHCP
 sudo systemctl start wpa_supplicant@wlan0.service
-
-# Obtain IP address via DHCP
 sudo dhclient wlan0
 
 # Check network connection
@@ -68,6 +63,7 @@ echo "Checking network connection..."
 ping -c 4 google.com
 
 # Edit the OLED configuration
+echo "Configuring OLED display..."
 sudo bash -c 'cat > /etc/kvmd/oled.conf <<EOF
 [oled]
 enabled = true
@@ -83,10 +79,11 @@ custom_layout = {
     "row_5": "Speed: {network_speed} Mbps"
 }
 
-custom_text = "Secure KVM Console"
+custom_text = "Multicloud365.com"
 EOF'
 
-# Edit the override.yaml configuration to enable the Jiggler
+# Enable and configure the Jiggler in override.yaml
+echo "Configuring Jiggler in kvmd override.yaml..."
 sudo bash -c 'cat >> /etc/kvmd/override.yaml <<EOF
 kvmd:
     hid:
@@ -95,16 +92,13 @@ kvmd:
             active: true
 EOF'
 
-# Restart the kvmd-oled service to apply OLED changes
+# Restart kvmd services to apply changes
 sudo systemctl restart kvmd-oled
-
-# Restart the kvmd service to apply Jiggler changes
 sudo systemctl restart kvmd
 
 # Enable and start the kvmd-vnc daemon
 sudo systemctl enable --now kvmd-vnc
-
-echo "Hostname changed, OLED configuration updated, Jiggler enabled, and VNC daemon started."
+echo "VNC daemon started."
 
 # Install Cloudflare's cloudflared
 echo "Installing Cloudflare's cloudflared..."
@@ -117,16 +111,16 @@ chmod +x /usr/local/bin/cloudflared
 cloudflared version
 echo "Cloudflare's cloudflared installed and verified."
 
-# Install Cloudflare Tunnel service using provided token
+# Install Cloudflare Tunnel service using the token
 echo "Installing Cloudflare Tunnel service..."
-sudo cloudflared service install eyJhIjoiYzZlODQ5MTE1Y2RiNWVkOTI5ODNiODhmYzhhYmIzYWMiLCJ0IjoiYzE2OTI2YjctYjQwYy00MmJkLThiNWUtMzhkMDQ4M2U5MDkwIiwicyI6Ik5EVTRZbVV3WWpNdFpERm1NUzAwTkdRMExUbGtNVFl0TkdZM01EazFOR1EzTWpKaSJ9
+sudo cloudflared service install $CLOUDFLARE_TOKEN
 echo "Cloudflare Tunnel service installed."
 
 # Enable cloudflared service to start on boot
 sudo systemctl enable cloudflared
 echo "Cloudflared service enabled to start on boot."
 
-# Install Tailscale
+# Install Tailscale for PiKVM
 echo "Installing Tailscale for PiKVM..."
 
 # Check if a pacman lock file exists, remove it if present
