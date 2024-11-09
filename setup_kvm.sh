@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Set Wi-Fi credentials
+WIFI_SSID="YourWiFiSSID"
+WIFI_PASSWORD="YourWiFiPassword"
+
 # Set the desired hostname (change "YourDesiredHostname" to your actual hostname)
 NEW_HOSTNAME="kvm2.multicloud365.com"
 
