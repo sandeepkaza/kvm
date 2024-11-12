@@ -96,6 +96,11 @@ EOF'
 sudo systemctl restart kvmd-oled
 sudo systemctl restart kvmd
 
+# Enable kvmd services to apply changes
+sudo systemctl enable kvmd-oled
+sudo systemctl enable kvmd
+
+
 # Enable and start the kvmd-vnc daemon
 sudo systemctl enable --now kvmd-vnc
 echo "VNC daemon started."
