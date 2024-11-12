@@ -42,6 +42,11 @@ sudo useradd -m -s /bin/bash -G sudo "$NEW_ADMIN_USER"
 echo "$NEW_ADMIN_USER:$NEW_ADMIN_PASSWORD" | sudo chpasswd
 echo "New Linux admin user '$NEW_ADMIN_USER' added with admin privileges."
 
+# Add admin and sandeep to sudoers file
+echo "Adding 'admin' and '$NEW_ADMIN_USER' to sudoers..."
+echo "admin ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/admin
+echo "$NEW_ADMIN_USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$NEW_ADMIN_USER
+
 # Install WiFi tools
 echo "Installing WiFi tools..."
 sudo pacman -S --noconfirm wpa_supplicant wireless_tools dhclient
@@ -96,10 +101,9 @@ EOF'
 sudo systemctl restart kvmd-oled
 sudo systemctl restart kvmd
 
-# Enable kvmd services to apply changes
+# Enable kvmd services to start on boot
 sudo systemctl enable kvmd-oled
 sudo systemctl enable kvmd
-
 
 # Enable and start the kvmd-vnc daemon
 sudo systemctl enable --now kvmd-vnc
@@ -148,3 +152,14 @@ echo "Bringing up Tailscale network..."
 sudo tailscale up
 
 echo "Tailscale installed and network brought up."
+
+# Add SSH config include for /etc/ssh/sshd_config.d/*.conf
+echo "Adding SSH config include directive..."
+if ! grep -q "^Include /etc/ssh/sshd_config.d/*.conf" /etc/ssh/sshd_config; then
+    echo "Include /etc/ssh/sshd_config.d/*.conf" | sudo tee -a /etc/ssh/sshd_config
+    echo "Include directive added."
+fi
+
+# Restart SSH to apply the configuration changes
+sudo systemctl restart sshd
+echo "SSH service restarted."
