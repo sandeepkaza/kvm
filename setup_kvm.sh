@@ -13,7 +13,7 @@ NEW_HOSTNAME="kvm2.multicloud365.com"
 # Set new passwords for admin, root, and the new Linux admin user
 ADMIN_PASSWORD="Admin@12369"
 ROOT_PASSWORD="Admin@12369"
-NEW_ADMIN_USER="Sandeep"
+NEW_ADMIN_USER="sandeep"
 NEW_ADMIN_PASSWORD="Sandeep@123456"
 
 # Change the hostname
