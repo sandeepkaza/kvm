@@ -34,8 +34,34 @@ systemctl start plexmediaserver
 echo "Checking the status of Plex Media Server service..."
 systemctl status plexmediaserver --no-pager
 
+# Create content directories in the user's home directory
+echo "Creating Plex content directories in the user's home directory..."
+
+user_home=$(eval echo ~$SUDO_USER)  # Get the home directory of the user who ran the script
+media_dir="$user_home/PlexMedia"
+
+# Create the media directories for Movies, TV Shows, Music, etc.
+mkdir -p "$media_dir/Movies"
+mkdir -p "$media_dir/TVShows"
+mkdir -p "$media_dir/Music"
+mkdir -p "$media_dir/Photos"
+
+# Set appropriate permissions for the directories
+chown -R $SUDO_USER:$SUDO_USER "$media_dir"
+
+# Output the directories created
+echo "Created the following directories in $user_home/PlexMedia:"
+echo "- Movies"
+echo "- TVShows"
+echo "- Music"
+echo "- Photos"
+
 # Output the IP and instructions for accessing Plex
 server_ip=$(hostname -I | awk '{print $1}')
 echo "Plex Media Server installation complete."
 echo "You can access the Plex web interface at: http://$server_ip:32400/web"
-
+echo "Please add your media files to the following directories:"
+echo "- $media_dir/Movies"
+echo "- $media_dir/TVShows"
+echo "- $media_dir/Music"
+echo "- $media_dir/Photos"

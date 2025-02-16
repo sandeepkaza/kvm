@@ -34,8 +34,34 @@ systemctl start jellyfin
 echo "Checking the status of Jellyfin service..."
 systemctl status jellyfin --no-pager
 
+# Create content directories in the user's home directory inside the "Jellyfin" folder
+echo "Creating Jellyfin content directories..."
+
+user_home=$(eval echo ~$SUDO_USER)  # Get the home directory of the user who ran the script
+jellyfin_dir="$user_home/Jellyfin"
+
+# Create the Jellyfin folder and subdirectories for Movies, TV Shows, Music, etc.
+mkdir -p "$jellyfin_dir/Movies"
+mkdir -p "$jellyfin_dir/TVShows"
+mkdir -p "$jellyfin_dir/Music"
+mkdir -p "$jellyfin_dir/Photos"
+
+# Set appropriate permissions for the directories
+chown -R $SUDO_USER:$SUDO_USER "$jellyfin_dir"
+
+# Output the directories created
+echo "Created the following directories in $user_home/Jellyfin:"
+echo "- Movies"
+echo "- TVShows"
+echo "- Music"
+echo "- Photos"
+
 # Output the IP and instructions for accessing Jellyfin
 server_ip=$(hostname -I | awk '{print $1}')
 echo "Jellyfin Media Server installation complete."
 echo "You can access the Jellyfin web interface at: http://$server_ip:8096"
-
+echo "Please add your media files to the following directories:"
+echo "- $jellyfin_dir/Movies"
+echo "- $jellyfin_dir/TVShows"
+echo "- $jellyfin_dir/Music"
+echo "- $jellyfin_dir/Photos"

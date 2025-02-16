@@ -1,11 +1,8 @@
 #!/bin/bash
 
 # Define Cloudflare Tunnel token as a variable (update this value when needed)
-CLOUDFLARE_TOKEN="eyJhIjoiYzZlODQ5MTE1Y2RiNWVkOTI5ODNiODhmYzhhYmIzYWMiLCJ0IjoiYzE2OTI2YjctYjQwYy00MmJkLThiNWUtMzhkMDQ4M2U5MDkwIiwicyI6Ik5EVTRZbVV3WWpNdFpERm1NUzAwTkdRMExUbGtNVFl0TkdZM01EazFOR1EzTWpKaSJ9"
+CLOUDFLARE_TOKEN="eyJhIjoiYzZlODQ5MTE1Y2RiNWVkOTI5ODNiODhmYzhhYmIzYWMiLCJ0IjoiZmIwNTQ1ODItN2M1Yi00NGQ3LWJjZDQtZGQ2Mjk2ZDRmYzIyIiwicyI6IlptRXhZVGd4TURJdFpEa3laaTAwTnpBekxUazVZV1l0WlRVMFpUTmxZbUkyT1dFMSJ9"
 
-# Set Wi-Fi credentials
-WIFI_SSID="a3gnet24G"
-WIFI_PASSWORD="Mynetwork@312"
 
 # Set the desired hostname
 NEW_HOSTNAME="kvm2.multicloud365.com"
@@ -47,22 +44,6 @@ echo "Adding 'admin' and '$NEW_ADMIN_USER' to sudoers..."
 echo "admin ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/admin
 echo "$NEW_ADMIN_USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$NEW_ADMIN_USER
 
-# Install WiFi tools
-echo "Installing WiFi tools..."
-sudo pacman -S --noconfirm wpa_supplicant wireless_tools dhclient
-
-# Enable WiFi interface (assuming wlan0 as the interface)
-echo "Enabling WiFi interface..."
-sudo ip link set wlan0 up
-
-# Connect to WiFi network
-echo "Connecting to WiFi network '$WIFI_SSID'..."
-sudo wpa_passphrase "$WIFI_SSID" "$WIFI_PASSWORD" | sudo tee /etc/wpa_supplicant/wpa_supplicant.conf
-
-# Start wpa_supplicant and obtain IP address via DHCP
-sudo systemctl start wpa_supplicant@wlan0.service
-sudo dhclient wlan0
-
 # Check network connection
 echo "Checking network connection..."
 ping -c 4 google.com
@@ -90,11 +71,10 @@ EOF'
 # Enable and configure the Jiggler in override.yaml
 echo "Configuring Jiggler in kvmd override.yaml..."
 sudo bash -c 'cat >> /etc/kvmd/override.yaml <<EOF
+
 kvmd:
-    hid:
-        jiggler:
-            enabled: true
-            active: true
+    msd:
+        type:  disabled
 EOF'
 
 # Restart kvmd services to apply changes
@@ -163,3 +143,13 @@ fi
 # Restart SSH to apply the configuration changes
 sudo systemctl restart sshd
 echo "SSH service restarted."
+
+
+kvmd-edidconf \
+--set-monitor-name="LG UltraWide" \
+--set-mfc-id="LGE" \
+--set-product-id=$((RANDOM * RANDOM % 65536)) \
+--set-serial=$((RANDOM * RANDOM)) \
+--set-monitor-serial=$(head /dev/urandom | tr -dc A-F0-9 | head -c 8) \
+--apply
+
